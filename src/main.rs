@@ -23,7 +23,7 @@ fn main() {
 
     // split the data into training and test sets at 0.67 ratio
     let m = data.rows();
-    let split_index = (m as f64 * 0.5).round() as usize;
+    let split_index = (m as f64 * 0.67).round() as usize;
     let (X_train, X_test) = X.split_at(split_index, Axes::Row);
     let (y_train, y_test) = y.split_at(split_index, Axes::Row);
 
@@ -71,6 +71,7 @@ fn main() {
 
 // For each value of the K output classes, construct a matrix that contains the 'likelihood' of
 // of each of the n input features taking on each of its J possible values. Return in a vector.
+// NOTE: these are the Maximum Likelihood Estimates
 fn likelihoods(clusters: &Vec<Matrix<f64>>, freq: &Vec<f64>, J: usize, l: f64) -> Vec<Matrix<f64>> {
     let n = clusters[0].cols();
     let K = freq.len();
@@ -150,7 +151,7 @@ fn evidence(X_test: &MatrixSlice<f64>,
             let x_i = X_test.row(i).iter().collect::<Vec<&f64>>();
             for j in 0..x_i.len() {
                 let c = *x_i[j] as usize - 1;
-                evidence[[i, k]] += likelihoods[k][[c, j]];
+                evidence[[i, k]] = evidence[[i, k]] * likelihoods[k][[c, j]].log(10.0);
             }
 
             // multiply by the class prior P(Y = y_k)
